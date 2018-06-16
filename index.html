@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>URDF Blocks</title>
+    <script src="js/thirdparty/threejs/three.min.js"></script> <!-- three.js https://threejs.org/ -->
+    <script src="js/thirdparty/threejs/OrbitControls.js"></script> <!-- three.js https://threejs.org/ -->
+    <script src="js/thirdparty/glmatrix/gl-matrix-min.js"></script> <!-- glMatrix http://glmatrix.net/ -->
+    <script src="js/thirdparty/blockly/blockly_compressed.js"></script> <!-- Blockly https://developers.google.com/blockly/ -->
+    <script src="js/thirdparty/blockly/blocks_compressed.js"></script> <!-- Blockly https://developers.google.com/blockly/ -->
+    <script src="js/thirdparty/blockly/javascript_compressed.js"></script> <!-- Blockly https://developers.google.com/blockly/ -->
+    <script src="js/thirdparty/blockly/msg/js/en.js"></script> <!-- Blockly https://developers.google.com/blockly/ -->
+    <script src="js/thirdparty/xmlwriter/XMLWriter.js"></script> <!-- XMLWriter https://github.com/flesler/XMLWriter -->
+    <script src="js/main.js"></script>
+    <script src="js/urdf_3d.js"></script>
+    <script src="js/urdfblockly.js"></script>
+    <script src="js/urdfblocks/etc.js"></script>
+    <script src="js/urdfblocks/joint.js"></script>
+    <script src="js/urdfblocks/link.js"></script>
+    <script src="js/urdfblocks/geometry.js"></script>
+    <script src="js/urdfblocks/math.js"></script>
+    <script src="js/sample_urdf.js"></script>
+  <style>
+    body {
+      background-color: #fff;
+      font-family: sans-serif;
+    }
+    h1 {
+      font-weight: normal;
+      font-size: 140%;
+    }
+    td {
+      vertical-align: top;
+    }
+    textarea {
+      width: 100%;
+      height: 20em;
+    }
+}
+  </style>
+  
+</head>
+<body>
+  <p>
+    <button onclick="saveBlocklyWorkspace()">Save Blockly Workspace</button>
+    <button onclick="onClickLoadBlocklyFile()">Load Blockly Workspace</button>
+    <input type="file" id="onLoadBlocklyFile" onchange="loadBlocklyWorkspace()" style="display: none">
+  </p>
+
+  <table style="width: 100%">
+    <tr>
+      <td style="width: 60%">
+        <div id="blocklyDiv" style="height: 700px; width: 50vm;"></div>
+  <xml id="toolbox" style="display: none">
+  <!-- 
+    <category name="Logic">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+      <block type="logic_operation"></block>
+      <block type="logic_negate"></block>
+      <block type="logic_boolean"></block>
+    </category>
+    <category name="Loops">
+      <block type="controls_repeat_ext">
+        <value name="TIMES">
+          <block type="math_number">
+            <field name="NUM">10</field>
+          </block>
+        </value>
+      </block>
+      <block type="controls_whileUntil"></block>
+    </category>
+    <category name="Math">
+      <block type="math_number">
+        <field name="NUM">123</field>
+      </block>
+      <block type="math_arithmetic"></block>
+      <block type="math_single"></block>
+    </category>
+    <category name="Text">
+      <block type="text"></block>
+      <block type="text_length"></block>
+      <block type="text_print"></block>
+    </category>
+    -->
+    <!--  URDF Link -->
+    <category name="Link">
+      <block type="urdf_robot">
+        <value name="robot_name">
+          <shadow type="text">
+            <field name="TEXT">Robot</field>
+          </shadow>
+        </value>
+      </block>
+
+      <block type="urdf_link">
+        <value name="name">
+          <shadow type="text">
+            <field name="TEXT">link0</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_origin -->
+      <block type="urdf_origin">
+        <value name="xyz">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+        <value name="rpy">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_link_inertial -->
+      <block type="urdf_link_inertial"></block>
+      
+      <!-- urdf_link_visual -->
+      <block type="urdf_link_visual">
+        <value name="geometry">
+          <shadow type="urdf_geometry_sphere">
+            <value name="radius">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </shadow>
+       </value>
+       <value name="material">
+         <block type="urdf_material">
+           <value name="name">
+             <shadow type="text">
+               <field name="TEXT">material0</field>
+             </shadow>
+           </value>
+         </block>
+       </value>
+      </block>
+      
+      <!-- urdf_link_collision -->
+      <block type="urdf_link_collision"></block>
+
+      <!-- urdf_geometry_box -->
+      <block type="urdf_geometry_box">
+        <value name="size">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">1</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_geometry_cylinder -->
+      <block type="urdf_geometry_cylinder">
+        <value name="radius">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="length">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_geometry_sphere -->
+      <block type="urdf_geometry_sphere">
+        <value name="radius">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_geometry_mesh -->
+      <block type="urdf_geometry_mesh">
+        <value name="filename">
+          <shadow type="text">
+            <field name="TEXT">filename</field>
+          </shadow>
+        </value>
+        <value name="scale">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_material -->
+      <block type="urdf_material">
+        <value name="name">
+          <shadow type="text">
+            <field name="TEXT">material</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_inertia -->
+      <block type="urdf_inertia">
+        <value name="ixx">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="ixy">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="ixz">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="iyy">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+        <value name="iyz">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="izz">
+          <shadow type="math_number">
+            <field name="NUM">1</field>
+          </shadow>
+        </value>
+      </block> <!-- urdf_inertia -->
+    </category>
+    
+    <!--  Joint -->
+    <category name="Joint">
+    
+      <!-- urdf_joint -->
+      <block type="urdf_joint">
+        <value name="name">
+          <shadow type="text">
+            <field name="TEXT">joint0</field>
+          </shadow>
+        </value>
+        <value name="origin">
+          <block type="urdf_origin">
+            <value name="xyz">
+              <shadow type="urdf_vec3">
+                <value name="vec3_0">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+                <value name="vec3_1">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+                <value name="vec3_2">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+              </shadow>
+            </value>
+            <value name="rpy">
+              <shadow type="urdf_vec3">
+                <value name="vec3_0">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+                <value name="vec3_1">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+                <value name="vec3_2">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+              </shadow>
+            </value>
+          </block>
+        </value>
+        <value name="axis">
+          <block type="urdf_joint_axis">
+            <value name="xyz">
+              <shadow type="urdf_vec3">
+                <value name="vec3_0">
+                  <shadow type="math_number">
+                    <field name="NUM">1</field>
+                  </shadow>
+                </value>
+                <value name="vec3_1">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+                <value name="vec3_2">
+                  <shadow type="math_number">
+                    <field name="NUM">0</field>
+                  </shadow>
+                </value>
+              </shadow>
+            </value>
+          </block>
+        </value>
+      </block>
+
+      <!-- urdf_origin -->
+      <block type="urdf_origin">
+        <value name="xyz">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+        <value name="rpy">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+      </block>
+      
+      <!-- urdf_joint_axis -->
+      <block type="urdf_joint_axis">
+        <value name="xyz">
+          <shadow type="urdf_vec3">
+            <value name="vec3_0">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_1">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+            <value name="vec3_2">
+              <shadow type="math_number">
+                <field name="NUM">0</field>
+              </shadow>
+            </value>
+          </shadow>
+        </value>
+      </block>
+      
+      <block type="urdf_joint_calibration"></block>
+      <block type="urdf_joint_dynamics"></block>
+      <block type="urdf_joint_limit"></block>
+      <block type="urdf_joint_mimic"></block>
+      <block type="urdf_joint_safety_controller"></block>
+    </category>
+    
+    <!--  Etc. -->
+    <category name="Etc.">
+      <block type="text"></block>
+      
+      <block type="math_number">
+        <field name="NUM">0</field>
+      </block>
+      
+      <block type="urdf_comment"></block>
+          
+      <block type="urdf_vec3">
+        <value name="vec3_0">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="vec3_1">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="vec3_2">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      
+      <block type="urdf_vec4">
+        <value name="vec4_0">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="vec4_1">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="vec4_2">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+        <value name="vec4_3">
+          <shadow type="math_number">
+            <field name="NUM">0</field>
+          </shadow>
+        </value>
+      </block>
+      
+    </category>
+    
+    <!--  Samples -->
+    <!-- 
+    <category name="Samples">
+    
+      <block type="urdf_link">
+        <value name="name">
+          <block type="text">
+            <field name="TEXT">link0</field>
+          </block>
+        </value>
+        <value name="children">
+          <block type="urdf_joint">
+            <value name="name">
+              <block type="text">
+                <field name="TEXT">joint0</field>
+              </block>
+            </value>
+            <value name="child_link">
+              <block type="urdf_link">
+                <value name="name">
+                  <block type="text">
+                    <field name="TEXT">link1</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+          </block>
+        </value>
+      </block>
+       -->
+      
+    </category>
+  </xml>
+  
+      </td>
+      <td>
+        <table style="width: 100%">
+          <tr>
+            <td style="width: 100%"><canvas id="urdf_canvas"></canvas></td>
+          </tr>
+          <tr>
+            <td style="width: 100%"><textarea id="urdf_output" readonly></textarea></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <script>
+    window.addEventListener('load', function(){
+        loadSampleURDF();
+        updateURDFScene(null);
+    }, false);
+  
+    window.addEventListener( 'resize', function() {
+      if (typeof urdfRobot == "undefined") {
+          updateURDFScene(null);
+      } else {
+          updateURDFScene(urdfRobot);
+      }
+    }, false);
+  
+    var blocklyWorkspace = Blockly.inject('blocklyDiv',
+        {media: 'js/thirdparty/blockly/media/',
+         toolbox: document.getElementById('toolbox')});
+
+    blocklyWorkspace.addChangeListener((function(event){
+        if (event.type != Blockly.Events.UI) {
+            //console.log("on event");
+            updateURDFBlockly();
+        }
+    }));
+  </script>
+
+</body>
+</html>
