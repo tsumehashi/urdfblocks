@@ -76,3 +76,10 @@ function loadBlocklyWorkspace() {
         reader.readAsText(file, 'utf-8');
     }
 }
+
+function saveURDFFile() {
+    var text = document.getElementById('urdf_output').value;
+    console.log(text);
+    
+    saveToLocal('urdfblocks.urdf', text);
+}
